@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  EmojiMemoryGameView.swift
 //  Stanford-Card-Game
 //
 //  Created by Brody Whalen on 4/6/25.
@@ -9,48 +9,62 @@ import SwiftUI
 
 
 
-struct ContentView: View {
+struct EmojiMemoryGameView: View {
+    
+    
+    var viewModel: EmojiMemoryGameVM
+    
     let halloweenEmojis : [String] = ["🕷️","👻","🎃","💀","🕷️","👻","🎃","💀"]
     let valentinesEmojis : [String] = ["💕","❤️","🌹","😍","💕","❤️","🌹","😍","🥰","🥰"]
     let christmasEmojis: [String] = ["🎅","🎁","🎄","🦌","🎅","🎁","🎄","🦌", "❄️", "❄️" ,"⛸️", "⛸️"]
     // can also do : [String] = ["","","",""]
     @State var selectedEmojis: [String] = []
+    @State var background_color: Color = Color.white
+    @State var card_color: Color = Color.black
     var body: some View {
-        VStack () {
-            Text("Memorize!").font(.largeTitle)
-            ScrollView{
-                
-                cards
-                
-                
-                //cardCountAdjusters
-            }
-            themes
-        }.padding()
+        
+        Color(background_color).ignoresSafeArea().overlay(
+            VStack () {
+                Text("Memorize!").font(.largeTitle)
+                ScrollView{
+                    cards
+                    //cardCountAdjusters
+                }
+                themes
+            }.padding()
+        )
     }
+    
+    
     var cards: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))]){
             ForEach(0..<selectedEmojis.count,id: \.self){ index in
                 CardView(content: selectedEmojis[index]).aspectRatio(2/3, contentMode: .fit)
             }
         }
-        .foregroundColor(.orange)
+        .foregroundColor(card_color)
     }
     var themes: some View {
         return HStack {
             VStack{
                 Button(action: {
                     selectedEmojis = christmasEmojis.shuffled()
+                    background_color = Color.green
+                    card_color = Color.blue
                 }, label: {Image(systemName: "snowflake").imageScale(.large).font(.largeTitle).frame(height: 50)})
                 Text("Christmas")}
             VStack{
                 Button(action: {
                     selectedEmojis = halloweenEmojis.shuffled()
+                    background_color = Color.gray
+                    card_color = Color.orange
                 }, label: {Image(systemName: "cat.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
                 Text("Halloween")}
             VStack{
                 Button(action: {
-                    selectedEmojis = christmasEmojis.shuffled()
+                    selectedEmojis = valentinesEmojis.shuffled()
+                    background_color = Color.white
+                    card_color = Color.red
                 }, label: {Image(systemName: "suit.heart.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
                 Text("Valentines")}
         }
@@ -95,15 +109,15 @@ struct CardView : View {
             let base = RoundedRectangle(cornerRadius: 12)
             Group {
                 base
-                    .foregroundStyle(.white)
+//                    .foregroundStyle(.red)
                 base
-                    .strokeBorder(lineWidth: 10)
+                    .strokeBorder(lineWidth: 10).stroke(Color.black)
                 Text(content)
                     .font(.largeTitle)
                     .foregroundColor(.black)
               
             }.opacity(isFaceUp ? 1 : 0)
-            base.fill().opacity(isFaceUp ? 0 : 1)
+            base.fill().stroke(Color.black).opacity(isFaceUp ? 0 : 1)
          
             
         } // tap gesture logs taps when you click on the vstack
@@ -119,5 +133,5 @@ struct CardView : View {
 }
 
 #Preview {
-    ContentView()
+    EmojiMemoryGameView()
 }
