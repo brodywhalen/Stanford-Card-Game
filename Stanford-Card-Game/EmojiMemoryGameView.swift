@@ -10,95 +10,91 @@ import SwiftUI
 
 
 struct EmojiMemoryGameView: View {
+    //@state inside a view, comes into existence when on a screen, and then deleted when the view is taken away.
+    @ObservedObject var viewModel: EmojiMemoryGameVM
     
-    
-    var viewModel: EmojiMemoryGameVM
-    
-    let halloweenEmojis : [String] = ["🕷️","👻","🎃","💀","🕷️","👻","🎃","💀"]
-    let valentinesEmojis : [String] = ["💕","❤️","🌹","😍","💕","❤️","🌹","😍","🥰","🥰"]
-    let christmasEmojis: [String] = ["🎅","🎁","🎄","🦌","🎅","🎁","🎄","🦌", "❄️", "❄️" ,"⛸️", "⛸️"]
+//    let halloweenEmojis : [String] = ["🕷️","👻","🎃","💀","🕷️","👻","🎃","💀"]
+//    let valentinesEmojis : [String] = ["💕","❤️","🌹","😍","💕","❤️","🌹","😍","🥰","🥰"]
+//    let christmasEmojis: [String] = ["🎅","🎁","🎄","🦌","🎅","🎁","🎄","🦌", "❄️", "❄️" ,"⛸️", "⛸️"]
     // can also do : [String] = ["","","",""]
-    @State var selectedEmojis: [String] = []
-    @State var background_color: Color = Color.white
-    @State var card_color: Color = Color.black
+//    @State var selectedEmojis: [String] = []
+//    @State var background_color: Color = Color.white
+//    @State var card_color: Color = Color.black
     var body: some View {
         
-        Color(background_color).ignoresSafeArea().overlay(
+//        Color(background_color).ignoresSafeArea().overlay(
             VStack () {
                 Text("Memorize!").font(.largeTitle)
                 ScrollView{
-                    cards
+                    cards // the card has to conform to equitable
+                        .animation(.default, value: viewModel.cards)
                     //cardCountAdjusters
                 }
-                themes
+                HStack {
+                    Button("Shuffle"){
+                        viewModel.shuffle()
+                    }
+                    Button("New Game"){
+                        viewModel.newGame()
+                    }
+                }
+
+                
+//                themes
             }.padding()
-        )
+//        )
     }
     
     
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))]){
-            ForEach(0..<selectedEmojis.count,id: \.self){ index in
-                CardView(content: selectedEmojis[index]).aspectRatio(2/3, contentMode: .fit)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0){
+            ForEach(viewModel.cards){ card in
+                CardView(card)
+                    .aspectRatio(2/3, contentMode: .fit)
+                    .padding(4)
+                    .onTapGesture {
+                        viewModel.choose(card)
+                    }
             }
         }
-        .foregroundColor(card_color)
+//        .foregroundColor(card_color)
     }
-    var themes: some View {
-        return HStack {
-            VStack{
-                Button(action: {
-                    selectedEmojis = christmasEmojis.shuffled()
-                    background_color = Color.green
-                    card_color = Color.blue
-                }, label: {Image(systemName: "snowflake").imageScale(.large).font(.largeTitle).frame(height: 50)})
-                Text("Christmas")}
-            VStack{
-                Button(action: {
-                    selectedEmojis = halloweenEmojis.shuffled()
-                    background_color = Color.gray
-                    card_color = Color.orange
-                }, label: {Image(systemName: "cat.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
-                Text("Halloween")}
-            VStack{
-                Button(action: {
-                    selectedEmojis = valentinesEmojis.shuffled()
-                    background_color = Color.white
-                    card_color = Color.red
-                }, label: {Image(systemName: "suit.heart.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
-                Text("Valentines")}
-        }
-    }
+//    var themes: some View {
+//        return HStack {
+//            VStack{
+//                Button(action: {
+////                    selectedEmojis = christmasEmojis.shuffled()
+////                    background_color = Color.green
+////                    card_color = Color.blue
+//                }, label: {Image(systemName: "snowflake").imageScale(.large).font(.largeTitle).frame(height: 50)})
+//                Text("Christmas")}
+//            VStack{
+//                Button(action: {
+////                    selectedEmojis = halloweenEmojis.shuffled()
+////                    background_color = Color.gray
+////                    card_color = Color.orange
+//                }, label: {Image(systemName: "cat.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
+//                Text("Halloween")}
+//            VStack{
+//                Button(action: {
+////                    selectedEmojis = valentinesEmojis.shuffled()
+////                    background_color = Color.white
+////                    card_color = Color.red
+//                }, label: {Image(systemName: "suit.heart.fill").imageScale(.large).font(.largeTitle).frame(height: 50)})
+//                Text("Valentines")}
+//        }
+//    }
 }
 
-//    var cardCountAdjusters: some View {
-//        HStack{
-//            cardRemover
-//            Spacer()
-//            cardAdder
-//        }.imageScale(.large)
-//        .font(.largeTitle)
-//    }
-    //first name is external, second name is internal (by v. offset)
-//    func cardCountAdjuster(by offset: Int, symbol: String) -> some View {
-//        Button(action : {
-//            cardCount += offset
-//        }, label: {
-//            Image(systemName: symbol)
-//        }).disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
-//    }
-//    var cardRemover: some View {
-//        return cardCountAdjuster(by: -1, symbol: "rectangle.stack.fill.badge.minus")
-//    }
-//    var cardAdder: some View {
-//        return cardCountAdjuster(by: 1, symbol: "rectangle.stack.fill.badge.plus")
-//        }
-//}
 
 struct CardView : View {
     // cannot be let since the cardview will set.
-    let content: String
-    @State var isFaceUp: Bool = false
+    let card: MemoryGame<String>.Card
+    
+    init(_ card: MemoryGame<String>.Card) {
+        self.card = card
+    }
+    
     var body: some View {
         
         //view modifier to make tap change
@@ -112,26 +108,25 @@ struct CardView : View {
 //                    .foregroundStyle(.red)
                 base
                     .strokeBorder(lineWidth: 10).stroke(Color.black)
-                Text(content)
-                    .font(.largeTitle)
+                Text(card.content)
+                    .font(.system(size: 200))
+                    .minimumScaleFactor(0.01)
+                    .aspectRatio(1,contentMode: .fit)
                     .foregroundColor(.black)
               
-            }.opacity(isFaceUp ? 1 : 0)
-            base.fill().stroke(Color.black).opacity(isFaceUp ? 0 : 1)
+            }.opacity(card.isFaceUp ? 1 : 0)
+            base.fill().stroke(Color.black).opacity(card.isFaceUp ? 0 : 1)
          
             
-        } // tap gesture logs taps when you click on the vstack
-        .onTapGesture(perform: {
-            // temporary state, for small animation things, not saving game state ect...
-            //            isFaceUp = !isFaceUp
-            // has toggle since it is a struct that has functions on it
-            //View are immutable! they cannot be changed
-            isFaceUp.toggle()
-        })
+        }
+        .opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
+//        .onTapGesture(perform: {
+//            card.isFaceUp.toggle()
+//        })
                 
     }
 }
 
 #Preview {
-    EmojiMemoryGameView()
+    EmojiMemoryGameView(viewModel: EmojiMemoryGameVM())
 }
