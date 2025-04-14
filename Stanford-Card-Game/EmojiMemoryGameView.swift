@@ -19,7 +19,7 @@ struct EmojiMemoryGameView: View {
     // can also do : [String] = ["","","",""]
 //    @State var selectedEmojis: [String] = []
 //    @State var background_color: Color = Color.white
-//    @State var card_color: Color = Color.black
+//    @State var card_color: Color = Color.black //
     var body: some View {
         
 //        Color(background_color).ignoresSafeArea().overlay(

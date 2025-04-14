@@ -17,9 +17,20 @@ class EmojiMemoryGameVM: ObservableObject {
     // all vars need default values in a class
     
     // makes it global namespace it inside the class, EmojiMemoryGameVM.emojis
-    
+    @Published private(set) var theme: Theme
+    @Published private var model: MemoryGame<String>
     // create 6 themes to be randomly chosen from to start the game. Should include, a name, number of pairs, and color to draw the cards.
-    enum Theme: String, CaseIterable {
+    private let pairs: Int
+    
+    init () {
+        self.pairs = 6
+        let theme = Theme.allCases.randomElement()!
+        self.theme  = theme
+        self.model = EmojiMemoryGameVM.createMemoryGame(theme: theme, pairs: pairs)
+    }
+    
+    enum Theme: CaseIterable {
+                        
         case halloween
         case christmas
         case fourthOfJuly
@@ -27,14 +38,45 @@ class EmojiMemoryGameVM: ObservableObject {
         case saintPaddies
         case chineseNewYear
         
-        func getThemedEmojis() -> [String] {
+        func getThemedEmojis(numCards: Int) -> [String] {
+                   
+            
             switch self {
-                case.halloween: return ["🎃","👻","💀","🕷️"]
-                case.christmas: return ["🎅","🎁","🎄","🦌","❄️","⛸️" ]
-                case.fourthOfJuly: return ["🇺🇸","🍔","🌭","🎆"]
-                case.valentines: return ["🌹","❤️","🥰","💕"]
-                case.saintPaddies: return ["☘️","🍻","🇮🇪","🍀"]
-                case.chineseNewYear: return ["🧧","🥠","🎉","🐍"]
+                case.halloween:
+                    return Array<String>(["🎃","👻","💀","🕷️"].shuffled().prefix(numCards))
+                case.christmas:
+                return Array<String>(["🎅","🎁","🎄","🦌","❄️","⛸️" ].shuffled().prefix(numCards))
+                case.fourthOfJuly:
+                    return Array<String>(["🇺🇸","🍔","🌭","🎆"].shuffled().prefix(numCards))
+                case.valentines:
+                    return Array<String>(["🌹","❤️","🥰","💕"].shuffled().prefix(numCards))
+                case.saintPaddies:
+                    return Array<String>(["☘️","🍻","🇮🇪","🍀"].shuffled().prefix(numCards))
+                case.chineseNewYear:
+                    return Array<String>(["🧧","🥠","🎉","🐍"].shuffled().prefix(numCards))
+            }
+        }
+        
+        func getTitle() -> String {
+            
+            switch self {
+                case.halloween: return "Halloween"
+                case.christmas: return "Christmas"
+                case.fourthOfJuly: return " Fourth of July"
+                case.valentines: return "Valentines"
+                case.saintPaddies: return "Saint Paddy's"
+                case.chineseNewYear: return "Chinese New Year"
+            }
+        }
+        
+        func getColor() -> String {
+            switch self {
+                case.halloween: return ".Orange"
+                case.christmas: return ".Blue"
+                case.fourthOfJuly: return ".Red"
+                case.valentines: return ".Pink"
+                case.saintPaddies: return ".Green"
+                case.chineseNewYear: return ".Gold"
             }
         }
         
@@ -47,25 +89,26 @@ class EmojiMemoryGameVM: ObservableObject {
     
     
     
-    private static func createMemoryGame() -> MemoryGame<String>{
+    private static func createMemoryGame(theme: Theme, pairs: Int) -> MemoryGame<String>{
         
-        let theme = Theme.allCases.randomElement()!
-        let emojis = theme.getThemedEmojis()
+//        let pairs = 4
+//        let theme = Theme.allCases.randomElement()!
+        let emojis = theme.getThemedEmojis(numCards: pairs)
+                    
         
-        return MemoryGame(numberPairs: 4){ index in
+        return MemoryGame(numberPairs: pairs){ index in
             if emojis.indices.contains(index) {
                 return emojis[index]
             } else {
                 return "⁉️"
             }
-            
-            
+        
         }
     }
     
 //    var objectWillChange: ObservableObjectPublisher
     // private keeps this scoped to the class, preventing access from the View through viewModel.model
-    @Published private var model = EmojiMemoryGameVM.createMemoryGame()
+    
     
     
 
@@ -75,14 +118,18 @@ class EmojiMemoryGameVM: ObservableObject {
     var cards: Array<MemoryGame<String>.Card> {
         return model.cards
     }
+    
     // MARK: -Intents
     func shuffle() {
 //        model.cards.shuffle()  //cannot use mutatating member on an immutable value
         model.shuffle()
+        print(model)
         objectWillChange.send()
     }
     func newGame(){
-        model = EmojiMemoryGameVM.createMemoryGame()
+        let newTheme = Theme.allCases.randomElement()!
+        self.theme = newTheme
+        self.model = EmojiMemoryGameVM.createMemoryGame(theme: newTheme, pairs: pairs )
         objectWillChange.send()
     }
     
