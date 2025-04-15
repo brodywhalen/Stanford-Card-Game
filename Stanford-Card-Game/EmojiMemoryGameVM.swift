@@ -23,7 +23,7 @@ class EmojiMemoryGameVM: ObservableObject {
     private let pairs: Int
     
     init () {
-        self.pairs = 6
+        self.pairs = 4
         let theme = Theme.allCases.randomElement()!
         self.theme  = theme
         self.model = EmojiMemoryGameVM.createMemoryGame(theme: theme, pairs: pairs)
@@ -69,14 +69,14 @@ class EmojiMemoryGameVM: ObservableObject {
             }
         }
         
-        func getColor() -> String {
+        func getColor() -> Color {
             switch self {
-                case.halloween: return ".Orange"
-                case.christmas: return ".Blue"
-                case.fourthOfJuly: return ".Red"
-                case.valentines: return ".Pink"
-                case.saintPaddies: return ".Green"
-                case.chineseNewYear: return ".Gold"
+            case.halloween: return .orange
+            case.christmas: return .blue
+            case.fourthOfJuly: return .red
+            case.valentines: return .pink
+            case.saintPaddies: return .green
+            case.chineseNewYear: return Color.mint
             }
         }
         
@@ -117,6 +117,12 @@ class EmojiMemoryGameVM: ObservableObject {
     // intent functions
     var cards: Array<MemoryGame<String>.Card> {
         return model.cards
+    }
+    var ThemeColor: Color{
+        return self.theme.getColor()
+    }
+    var score: Int {
+        return self.model.score
     }
     
     // MARK: -Intents

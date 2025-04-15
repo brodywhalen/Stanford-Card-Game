@@ -30,6 +30,11 @@ struct EmojiMemoryGameView: View {
                         .animation(.default, value: viewModel.cards)
                     //cardCountAdjusters
                 }
+                // game title
+                Text(viewModel.theme.getTitle()).font(.largeTitle)
+                Text("Score")
+                Text("\(viewModel.score)")
+                
                 HStack {
                     Button("Shuffle"){
                         viewModel.shuffle()
@@ -49,7 +54,7 @@ struct EmojiMemoryGameView: View {
     var cards: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0){
             ForEach(viewModel.cards){ card in
-                CardView(card)
+                CardView(card, color: viewModel.ThemeColor)
                     .aspectRatio(2/3, contentMode: .fit)
                     .padding(4)
                     .onTapGesture {
@@ -90,9 +95,11 @@ struct EmojiMemoryGameView: View {
 struct CardView : View {
     // cannot be let since the cardview will set.
     let card: MemoryGame<String>.Card
+    let color: Color
     
-    init(_ card: MemoryGame<String>.Card) {
+    init(_ card: MemoryGame<String>.Card, color: Color) {
         self.card = card
+        self.color = color
     }
     
     var body: some View {
@@ -105,17 +112,17 @@ struct CardView : View {
             let base = RoundedRectangle(cornerRadius: 12)
             Group {
                 base
-//                    .foregroundStyle(.red)
+                    .foregroundStyle(.white)
                 base
-                    .strokeBorder(lineWidth: 10).stroke(Color.black)
+                    .strokeBorder(lineWidth: 10).stroke(color)
                 Text(card.content)
-                    .font(.system(size: 200))
+                    .font(.system(size: 100))
                     .minimumScaleFactor(0.01)
-                    .aspectRatio(1,contentMode: .fit)
-                    .foregroundColor(.black)
+                    .aspectRatio(1.90,contentMode: .fit)
+                    .foregroundColor(color)
               
             }.opacity(card.isFaceUp ? 1 : 0)
-            base.fill().stroke(Color.black).opacity(card.isFaceUp ? 0 : 1)
+            base.fill(color).stroke(color).opacity(card.isFaceUp ? 0 : 1)
          
             
         }

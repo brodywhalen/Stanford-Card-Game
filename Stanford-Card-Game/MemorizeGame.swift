@@ -11,10 +11,15 @@ struct MemoryGame<CardContent> where CardContent: Equatable{
     
     // setting variable is private, looking is okay though. called Access Control!
     private(set) var cards: Array<Card>
+    private(set) var score: Int
+    private(set) var path: [String]
+    private(set) var visitedScorePenalty: Int
     
     init(numberPairs: Int, cardContentFactory: (Int) -> CardContent){
         cards = []
-        
+        score = 0
+        visitedScorePenalty = 0
+        path = []
         
         // add numberPairs x 2 cards to array
         for pairIndex in 0..<max(2,numberPairs) {
@@ -28,23 +33,44 @@ struct MemoryGame<CardContent> where CardContent: Equatable{
     
     var indexofOnlyFaceUpCard: Int? {
         //computed prop
-        get{return cards.indices.filter{ index in cards[index].isFaceUp }.only}
-        set{return cards.indices.forEach {cards[$0].isFaceUp = (newValue == $0)}}
+        get{ return cards.indices.filter{ index in cards[index].isFaceUp }.only}
+        set{  return cards.indices.forEach {cards[$0].isFaceUp = (newValue == $0)}}
 
     }
     
     mutating func choose(card:Card){
+        
+        
         //        card.isFaceUp = false
+        if !path.contains(where: {$0 == card.id}) {
+            path.append(card.id)
+        } else {
+            visitedScorePenalty += 1
+        }
+        
+        
+        
+        
         if let chosenIndex = cards.firstIndex(where: { $0.id == card.id}) {
             
             if !cards[chosenIndex].isFaceUp && !cards[chosenIndex].isMatched {
+                
                 if let potentialMatchIndex = indexofOnlyFaceUpCard {
                     if cards[chosenIndex].content == cards[potentialMatchIndex].content {
+                        score += 2
                         cards[chosenIndex].isMatched = true
                         cards[potentialMatchIndex].isMatched = true
+                        
+                        /// ADD 2 POINTS
+                        
+                        
+                    } else {
+                        score -= visitedScorePenalty;
+                        visitedScorePenalty = 0;
                     }
 //                    indexofOnlyFaceUpCard = nil
                 } else {
+                    
                     indexofOnlyFaceUpCard = chosenIndex
                 }
                 cards[chosenIndex].isFaceUp = true
